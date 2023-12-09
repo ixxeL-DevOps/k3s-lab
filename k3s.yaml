@@ -9,7 +9,7 @@ kubeAPI:
   hostPort: "6446"
 image: rancher/k3s:v1.27.4-k3s1
 volumes:
-  - volume: /home/fred/Documents/git/gitlab-gentle/k3s-quanti/post-install/:/var/lib/rancher/k3s/server/manifests/
+  - volume: /home/fred/Documents/git/gh/ixxeL-DevOps/k3s-lab/post-install/:/var/lib/rancher/k3s/server/manifests/
     nodeFilters:
       - server:*
 ports:

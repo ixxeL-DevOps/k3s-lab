@@ -1,0 +1,5 @@
+post-install/ccm.yaml
+post-install/coredns.yaml
+post-install/local-storage.yaml
+post-install/metrics-server/
+post-install/rolebindings.yaml
