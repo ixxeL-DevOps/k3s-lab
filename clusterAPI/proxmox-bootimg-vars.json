@@ -1,0 +1,5 @@
+{
+    "kubernetes_semver": "v1.28.4",
+    "kubernetes_series": "1.28",
+    "extra_debs": "\"net-tools\""
+}

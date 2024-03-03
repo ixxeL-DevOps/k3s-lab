@@ -1,0 +1,16 @@
+ARG BASE_IMAGE=ubuntu:22.04
+FROM $BASE_IMAGE as build
+ARG TARGETARCH
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        systemd conntrack iptables iproute2 ethtool socat util-linux mount \
+        apparmor-utils ebtables kmod libseccomp2 pigz bash ca-certificates \
+        rsync nfs-common fuse-overlayfs curl gnupg2 \
+        dbus ufw linux-image-$(uname -r) \
+    && ln -s "$(which systemd)" /sbin/init
+
+FROM scratch
+COPY --from=build / /
+
+ENTRYPOINT ["/sbin/init"]

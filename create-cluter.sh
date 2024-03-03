@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DIR=$(pwd)/post-install/:/var/lib/rancher/k3s/server/manifests/
 

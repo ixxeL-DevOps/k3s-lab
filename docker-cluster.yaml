@@ -1,0 +1,97 @@
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: docker-test
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+    serviceDomain: cluster.local
+    services:
+      cidrBlocks:
+      - 10.128.0.0/12
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: K0smotronControlPlane
+    name: docker-test-cp
+    namespace: default
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: DockerCluster
+    name: docker-test
+    namespace: default
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: K0smotronControlPlane # This is the config for the controlplane
+metadata:
+  name: docker-test-cp
+  namespace: default
+spec:
+  k0sVersion: v1.27.2-k0s.0
+  persistence:
+    type: emptyDir
+  service:
+    type: NodePort
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerCluster
+metadata:
+  name: docker-test
+  namespace: default
+  annotations:
+    cluster.x-k8s.io/managed-by: k0smotron # This marks the base infra to be self managed. The value of the annotation is irrelevant, as long as there is a value.
+spec: {}
+  # More details of the DockerCluster can be set here
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name:  docker-test-md
+  namespace: default
+spec:
+  clusterName: docker-test
+  replicas: 1
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: docker-test
+      pool: worker-pool-1
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: docker-test
+        pool: worker-pool-1
+    spec:
+      clusterName: docker-test
+      version: v1.27.2 # Docker Provider requires a version to be set (see https://hub.docker.com/r/kindest/node/tags)
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: K0sWorkerConfigTemplate
+          name: docker-test-machine-config
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: DockerMachineTemplate
+        name: docker-test-mt
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerMachineTemplate
+metadata:
+  name: docker-test-mt
+  namespace: default
+spec:
+  template:
+    spec: {}
+  # More details of the DockerMachineTemplate can be set here
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: K0sWorkerConfigTemplate
+metadata:
+  name: docker-test-machine-config
+spec:
+  template:
+    spec:
+      version: v1.27.2+k0s.0
+      # More details of the worker configuration can be set here
