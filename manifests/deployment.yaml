@@ -14,6 +14,8 @@ spec:
       labels:
         app: fleetman-queue
     spec:
+      imagePullSecrets:
+        - name: dockerhub-creds
       containers:
         - name: fleetman-queue
           image: supinfo4kube/queue:1.0.1
@@ -53,6 +55,8 @@ spec:
       labels:
         app: fleetman-position-simulator
     spec:
+      imagePullSecrets:
+        - name: dockerhub-creds
       containers:
         - name: fleetman-position-simulator
           image: supinfo4kube/position-simulator:1.0.1
@@ -88,6 +92,8 @@ spec:
       labels:
         app: fleetman-position-tracker
     spec:
+      imagePullSecrets:
+        - name: dockerhub-creds
       containers:
         - name: fleetman-position-tracker
           image: supinfo4kube/position-tracker:1.0.1
@@ -125,6 +131,8 @@ spec:
       labels:
         app: fleetman-api-gateway
     spec:
+      imagePullSecrets:
+        - name: dockerhub-creds
       containers:
         - name: fleetman-api-gateway
           image: supinfo4kube/api-gateway:1.0.1
@@ -162,6 +170,8 @@ spec:
       labels:
         app: fleetman-webapp
     spec:
+      imagePullSecrets:
+        - name: dockerhub-creds
       containers:
         - name: fleetman-webapp
           image: supinfo4kube/web-app:1.0.0
@@ -247,6 +257,8 @@ spec:
       labels:
         app: fleetman-mongodb
     spec:
+      imagePullSecrets:
+        - name: dockerhub-creds
       containers:
         - name: fleetman-mongodb
           image: mongo:3.6.23
@@ -284,5 +296,3 @@ spec:
   resources:
     requests:
       storage: 5Gi
-
-

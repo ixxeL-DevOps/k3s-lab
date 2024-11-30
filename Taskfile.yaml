@@ -7,7 +7,7 @@ tasks:
       - |
         wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 
-  deploy-k3d:
+  create-cluster:
     desc: Deploie le cluster Kubernetes avec k3d
     vars:
       CURRENT_DIR:
@@ -20,8 +20,21 @@ tasks:
         echo "Configuration générée dans 'k3d-config.yaml'"
         k3d cluster create --config k3d.yaml
 
-  delete-k3d:
+  delete-cluster:
     desc: Detruit le cluster Kubernetes avec k3d
     cmds:
       - |
         k3d cluster delete --config k3d.yaml
+
+  gen-secret:
+    desc: Cree un secret Kubernetes pour l'authentification docker hub
+    vars:
+      DOCKERUSER: '{{ .DOCKERUSER | default "admin" }}'
+      DOCKERPWD: '{{ .DOCKERPWD | default "password" }}'
+    cmds:
+      - |
+        kubectl create secret docker-registry dockerhub-creds \
+            --docker-username={{ .DOCKERUSER }} \
+            --docker-password={{ .DOCKERPWD }} \
+            --docker-server=https://docker.io \
+            --namespace=default --dry-run=client -oyaml > manifests/secret.yaml

@@ -5,4 +5,5 @@ manifests/metrics-server/
 manifests/rolebindings.yaml
 manifests/runtimes.yaml
 manifests/traefik.yaml
+manifests/secret.yaml
 k3d.yaml
