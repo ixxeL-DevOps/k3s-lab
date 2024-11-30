@@ -67,12 +67,56 @@ task gen-secret DOCKERUSER=myuser DOCKERPWD=mypassword
 task create-cluster
 ```
 3. Attendez que le cluster soit disponible
-4. Verifier les deploiements et les services dans le namespace `default` de votre cluster:
+
+Vous devriez avoir ce genre d'output :
+```console
+task: [create-cluster] export CURRENT_DIR=/home/fred/Documents/git/gh/ixxeL-DevOps/k3s-lab
+envsubst < cluster.yaml > k3d.yaml
+k3d cluster create --config k3d.yaml
+
+INFO[0000] Using config file k3d.yaml (k3d.io/v1alpha5#simple) 
+INFO[0000] Prep: Network                                
+INFO[0000] Created network 'k3d-fleetman'               
+INFO[0000] Created image volume k3d-fleetman-images     
+INFO[0000] Starting new tools node...                   
+INFO[0000] Starting node 'k3d-fleetman-tools'           
+INFO[0001] Creating node 'k3d-fleetman-server-0'        
+INFO[0001] Creating node 'k3d-fleetman-agent-0'         
+INFO[0001] Creating node 'k3d-fleetman-agent-1'         
+INFO[0001] Creating LoadBalancer 'k3d-fleetman-serverlb' 
+INFO[0001] Using the k3d-tools node to gather environment information 
+INFO[0001] HostIP: using network gateway 172.19.0.1 address 
+INFO[0001] Starting cluster 'fleetman'                  
+INFO[0001] Starting servers...                          
+INFO[0001] Starting node 'k3d-fleetman-server-0'        
+INFO[0004] Starting agents...                           
+INFO[0004] Starting node 'k3d-fleetman-agent-1'         
+INFO[0004] Starting node 'k3d-fleetman-agent-0'         
+INFO[0007] Starting helpers...                          
+INFO[0007] Starting node 'k3d-fleetman-serverlb'        
+INFO[0013] Injecting records for hostAliases (incl. host.k3d.internal) and for 4 network members into CoreDNS configmap... 
+INFO[0015] Cluster 'fleetman' created successfully!     
+INFO[0015] You can now use it like this:                
+kubectl cluster-info
+```
+4. Verifier le deploiement du cluster
+
+```bash
+k3d cluster list
+```
+```bash
+k3d node list
+```
+```bash
+kubectl get nodes
+```
+
+5. Verifier les deploiements et les services dans le namespace `default` de votre cluster:
 ```bash
 kubectl get pods,svc -n default
 ```
-5. Acceder a la webapp
+6. Acceder a la webapp
 
 La webapp est configuree via un `Service` Kubernetes de type `NodePort` qui est mappe sur le port `8888` de votre machine hote.
-Pour pouvez y acceder a l'adresse : `http://localhost:8888`
+Pour pouvez y acceder a l'adresse : `http://localhost:8888` (doc: https://k3d.io/stable/usage/exposing_services/#2-via-nodeport)
 

@@ -2,13 +2,12 @@
 apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
-  name: lab
-servers: 1
-agents: 2
+  name: fleetman
+servers: 1 # 1 master node
+agents: 2 # 2 worker nodes
 kubeAPI:
   hostIP: "0.0.0.0"
   hostPort: "6446"
-image: rancher/k3s:v1.30.6-k3s1
 volumes:
   - volume: ${CURRENT_DIR}/manifests:/var/lib/rancher/k3s/server/manifests/ # On deploie automatiquement les manifests
     nodeFilters:
@@ -17,12 +16,6 @@ ports:
   - port: 8888:32080 # On ouvre un port sur notre machine locale vers le port NodePort du service web-app
     nodeFilters:
       - agent:*
-  - port: 6666:80
-    nodeFilters:
-      - loadbalancer
-  - port: 5555:443
-    nodeFilters:
-      - loadbalancer
 options:
   k3d:
     wait: true
@@ -31,7 +24,10 @@ options:
     disableImageVolume: false
   k3s:
     extraArgs:
-      - arg: --tls-san=127.0.0.1
+      - arg: --disable=traefik
+        nodeFilters:
+          - server:*
+      - arg: --disable=metrics-server
         nodeFilters:
           - server:*
   kubeconfig:
