@@ -1,0 +1,288 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleetman-queue
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleetman-queue
+  template:
+    metadata:
+      labels:
+        app: fleetman-queue
+    spec:
+      containers:
+        - name: fleetman-queue
+          image: supinfo4kube/queue:1.0.1
+          ports:
+            - containerPort: 8161
+            - containerPort: 61616
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-queue
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - name: http1
+      port: 8161
+      targetPort: 8161
+    - name: http2
+      port: 61616
+      targetPort: 61616
+  selector:
+    app: fleetman-queue
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleetman-position-simulator
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleetman-position-simulator
+  template:
+    metadata:
+      labels:
+        app: fleetman-position-simulator
+    spec:
+      containers:
+        - name: fleetman-position-simulator
+          image: supinfo4kube/position-simulator:1.0.1
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: production-microservice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-position-simulator
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: fleetman-position-simulator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleetman-position-tracker
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleetman-position-tracker
+  template:
+    metadata:
+      labels:
+        app: fleetman-position-tracker
+    spec:
+      containers:
+        - name: fleetman-position-tracker
+          image: supinfo4kube/position-tracker:1.0.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: production-microservice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-position-tracker
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: fleetman-position-tracker
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleetman-api-gateway
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleetman-api-gateway
+  template:
+    metadata:
+      labels:
+        app: fleetman-api-gateway
+    spec:
+      containers:
+        - name: fleetman-api-gateway
+          image: supinfo4kube/api-gateway:1.0.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: production-microservice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-api-gateway
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: fleetman-api-gateway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleetman-webapp
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleetman-webapp
+  template:
+    metadata:
+      labels:
+        app: fleetman-webapp
+    spec:
+      containers:
+        - name: fleetman-webapp
+          image: supinfo4kube/web-app:1.0.0
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config-volume
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-webapp
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: fleetman-webapp
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: default
+data:
+  nginx.conf: |
+    events {
+      worker_connections  4096;  ## Default: 1024
+    }
+
+    http {
+       map $http_upgrade $connection_upgrade {
+           default upgrade;
+          '' close;
+       }
+
+       include /etc/nginx/mime.types;
+
+       server {
+          listen 80;
+
+          location /api/ {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://fleetman-api-gateway:8080/;
+
+            proxy_read_timeout  90;
+
+            proxy_http_version 1.1;
+
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+          }
+
+          location / {
+             root /usr/share/nginx/html;
+          }
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleetman-mongodb
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleetman-mongodb
+  template:
+    metadata:
+      labels:
+        app: fleetman-mongodb
+    spec:
+      containers:
+        - name: fleetman-mongodb
+          image: mongo:3.6.23
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+      volumes:
+        - name: mongo-data
+          persistentVolumeClaim:
+            claimName: mongo-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-mongodb
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    app: fleetman-mongodb
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-data
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+

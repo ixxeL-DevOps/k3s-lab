@@ -1,0 +1,15 @@
+version: '3'
+
+tasks:
+  deploy-k3d:
+    desc: Génère le fichier de configuration K3d en utilisant le répertoire courant
+    cmds:
+      - |
+        echo "Génération du fichier de configuration K3d..."
+        CURRENT_DIR=$(pwd) && envsubst < cluster.yaml > k3d.yaml
+        echo "Configuration générée dans 'k3d-config.yaml'"
+        k3d cluster create --config k3d.yaml
+    vars:
+      CURRENT_DIR:
+        sh: pwd
+
