@@ -1,5 +1,8 @@
-post-install/ccm.yaml
-post-install/coredns.yaml
-post-install/local-storage.yaml
-post-install/metrics-server/
-post-install/rolebindings.yaml
+manifests/ccm.yaml
+manifests/coredns.yaml
+manifests/local-storage.yaml
+manifests/metrics-server/
+manifests/rolebindings.yaml
+manifests/runtimes.yaml
+manifests/traefik.yaml
+k3d.yaml
