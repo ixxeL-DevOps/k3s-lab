@@ -8,12 +8,15 @@ agents: 2
 kubeAPI:
   hostIP: "0.0.0.0"
   hostPort: "6446"
-image: rancher/k3s:v1.30.4-k3s1
+image: rancher/k3s:v1.30.6-k3s1
 volumes:
-  - volume: ${CURRENT_DIR}/manifests:/var/lib/rancher/k3s/server/manifests/
+  - volume: ${CURRENT_DIR}/manifests:/var/lib/rancher/k3s/server/manifests/ # On deploie automatiquement les manifests
     nodeFilters:
       - server:*
 ports:
+  - port: 8888:32080 # On ouvre un port sur notre machine locale vers le port NodePort du service web-app
+    nodeFilters:
+      - agent:*
   - port: 6666:80
     nodeFilters:
       - loadbalancer

@@ -1,5 +1,5 @@
+---
 version: '3'
-
 tasks:
   install-k3d:
     desc: Install le binaire k3d
@@ -14,10 +14,8 @@ tasks:
         sh: pwd
     cmds:
       - |
-        echo "Génération du fichier de configuration K3d..."
         export CURRENT_DIR={{.CURRENT_DIR}}
         envsubst < cluster.yaml > k3d.yaml
-        echo "Configuration générée dans 'k3d-config.yaml'"
         k3d cluster create --config k3d.yaml
 
   delete-cluster:
